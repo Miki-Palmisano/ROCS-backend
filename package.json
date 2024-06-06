@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/Miki-Palmisano/ROCS-backend/issues"
   },
-  "homepage": "https://github.com/Miki-Palmisano/ROCS-backend#readme"
+  "homepage": "https://github.com/Miki-Palmisano/ROCS-backend#readme",
+  "dependencies": {
+    "express": "^4.19.2",
+    "mongoose": "^8.4.1"
+  }
 }
