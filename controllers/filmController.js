@@ -1,32 +1,34 @@
 const axios = require('axios');
+const API_KEY = process.env.TMDB_API_KEY;
 
 const options = {
   method: 'GET',
-  url: 'https://streaming-availability.p.rapidapi.com/shows/search/filters',
-  params: {
-    country: 'it',
-  },
+  url: 'https://api.themoviedb.org/3/discover/movie',
   headers: {
-    'x-rapidapi-key': '6bdf8b45aemsha36144461e95eb5p193fbajsnbb6ee96e9e88',
-    'x-rapidapi-host': 'streaming-availability.p.rapidapi.com'
+    accept: 'application/json',
+    Authorization: `Bearer ${API_KEY}`
+  }, 
+  params: {
+    with_watch_providers: '8|9', // Netflix and Amazon Prime
+    watch_region: 'IT',
+    language: 'it-IT',
+    sort_by: 'popularity.desc',
   }
 };
 
 const getAllFilms = async (req, res) => {
     try {
         const response = await axios.request(options);
-        const films = response.data.shows.map((film) => {
+        const films = response.data.results.map((film) => {
             return {
-                type: film.showType, 
+                type: "movie", 
                 id: film.id, 
                 title: film.title, 
                 description: film.overview, 
                 year: film.releaseYear, 
-                genres: film.genres, 
-                directors: film.directors, 
-                cast: film.cast, 
-                rating: film.rating, 
-                img: film.imageSet.verticalPoster.w720,
+                genres: film.genre_ids,
+                rating: film.vote_average, 
+                img: "https://image.tmdb.org/t/p/w780" + film.poster_path,
             };
         });
         res.json(films);

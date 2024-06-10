@@ -9,6 +9,6 @@ app.use(cors())
 app.use(express.json())
 app.use("/api/film", collectionFilm)
 
-app.listen(4000, () => {
-    console.log("listening on port 4000")
+app.listen(2000, () => {
+    console.log("listening on port 2000")
 })
