@@ -1,5 +1,5 @@
 const axios = require('axios');
-const API_KEY = process.env.TMDB_API;
+const API_KEY = process.env.TMDB_API_KEY;
 
 const options = {
     method: 'GET',
