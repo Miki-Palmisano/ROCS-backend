@@ -9,7 +9,7 @@ const options = {
     Authorization: `Bearer ${API_KEY}`
   }, 
   params: {
-    with_watch_providers: '8|9', // Netflix and Amazon Prime
+    //with_watch_providers: '8|9', // Netflix and Amazon Prime
     watch_region: 'IT',
     language: 'it-IT',
     sort_by: 'popularity.desc',
