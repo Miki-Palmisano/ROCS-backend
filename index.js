@@ -1,16 +1,41 @@
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
+
 const express = require('express')
 const cors = require('cors')
-const mongoose = require('mongoose')
-const collectionFilms = require('./routes/films')
-const collectionSeries = require('./routes/series')
+const axios = require('axios')
+const CONTENT_SERVICE_URL = process.env.CONTENT_SERVICE;
+const FRONTEND_URL = process.env.FRONTEND_URL;
 
 const app = express()
 
-app.use(cors())
-app.use(express.json())
-app.use("/api/film", collectionFilms)
-app.use("/api/serie", collectionSeries)
+const corsOptions = {
+    origin: FRONTEND_URL,
+    optionsSuccessStatus: 200
+}
 
-app.listen(2000, () => {
-    console.log("listening on port 2000")
+app.use(cors(corsOptions))
+
+app.all('/content/*', async (req, res) => {
+    let rocsContentServiceUrl = `${CONTENT_SERVICE_URL}${req.originalUrl}`;
+    
+    try {
+        const response = await axios({
+            method: req.method,
+            url: rocsContentServiceUrl,
+            data: req.body,
+            headers: {
+                ...req.headers,
+            }
+        });
+        res.status(response.status).send(response.data);
+    } catch (e) {
+        res.status(e.response.status).send(e.response.data);
+    }
+});
+
+
+app.listen(3000, () => {
+    console.log("Gateway listening on port 3000")
 })
