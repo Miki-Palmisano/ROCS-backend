@@ -18,8 +18,6 @@ const corsOptions = {
     origin: FRONTEND_URL
 }
 
-console.log('corsOptions', corsOptions)
-
 app.use(express.json());
 app.use('/content', cors(corsOptions), createProxyMiddleware({ target: services.content, changeOrigin: true }));
 
