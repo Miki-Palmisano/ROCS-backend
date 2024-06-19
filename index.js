@@ -14,12 +14,13 @@ const services = {
     content: CONTENT_SERVICE_URL
 }
 
-app.use(cors({
+const corsOptions = {
     origin: FRONTEND_URL,
     optionsSuccessStatus: 200
-}));
+}
+
 app.use(express.json());
-app.use('/content', createProxyMiddleware({ target: services.content, changeOrigin: true }));
+app.use('/content', cors(corsOptions), createProxyMiddleware({ target: services.content, changeOrigin: true }));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
