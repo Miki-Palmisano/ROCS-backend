@@ -19,8 +19,8 @@ const corsOptions = {
 app.use(cors())
 
 app.all('/content/*', async (req, res) => {
-    let rocsContentServiceUrl = `${CONTENT_SERVICE_URL}${req.originalUrl}`;
-    
+    //let rocsContentServiceUrl = `${CONTENT_SERVICE_URL}${req.originalUrl}`;
+    let rocsContentServiceUrl = `https://rocs-content-service.onrender.com/content/films`;
     try {
         const response = await axios({
             method: req.method,
