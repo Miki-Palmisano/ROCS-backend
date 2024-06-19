@@ -11,7 +11,7 @@ const app = express();
 
 const services = {
     content: CONTENT_SERVICE_URL
-} 
+}
 
 app.use(cors());
 app.use(express.json());
