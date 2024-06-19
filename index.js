@@ -15,7 +15,7 @@ const services = {
 }
 
 const corsOptions = {
-    origin: FRONTEND_URL,
+    origin: 'https://rocs.onrender.com',
     optionsSuccessStatus: 200
 }
 
