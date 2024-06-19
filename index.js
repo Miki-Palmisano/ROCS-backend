@@ -17,20 +17,22 @@ app.use(cors({
 
 app.use(express.json())
 
-app.get('/content/*', async (req, res) => {
+app.all('/content/*', async (req, res) => {
     let rocsContentServiceUrl = `${CONTENT_SERVICE_URL}${req.originalUrl}`;
-    
+    console.log(rocsContentServiceUrl);
     try {
         const response = await axios({
-            method: 'GET',
+            method: req.method,
             url: rocsContentServiceUrl,
             data: req.body,
             headers: {
+                accept: 'application/json',
                 ...req.headers,
             }
         });
         res.status(response.status).send(response.data);
     } catch (e) {
+        console.log(e);
         res.status(e.response.status).send(e.response.data);
     }
 });
