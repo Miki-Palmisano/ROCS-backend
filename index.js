@@ -17,9 +17,9 @@ const services = {
 const corsOptions = {
     origin: FRONTEND_URL
 }
-
+app.use(cors(corsOptions));
 app.use(express.json());
-app.use('/content', cors(), createProxyMiddleware({ target: services.content, changeOrigin: true }));
+app.use('/content', cors(corsOptions), createProxyMiddleware({ target: services.content, changeOrigin: true }));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
