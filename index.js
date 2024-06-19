@@ -28,7 +28,8 @@ app.all('/content/*', async (req, res) => {
             data: req.body,
             headers: {
                 ...req.headers,
-            }
+            },
+            timeout: 10000
         });
         res.status(response.status).send(response.data);
     } catch (e) {
