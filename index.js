@@ -14,7 +14,9 @@ const services = {
     content: CONTENT_SERVICE_URL
 }
 
-app.use(cors());
+app.use(cors({
+    origin: FRONTEND_URL
+}));
 app.use(express.json());
 app.use('/content', createProxyMiddleware({ target: services.content, changeOrigin: true }));
 
