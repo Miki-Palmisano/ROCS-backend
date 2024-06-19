@@ -32,7 +32,8 @@ app.all('/content/*', async (req, res) => {
         });
         res.status(response.status).send(response.data);
     } catch (e) {
-        console.log(e);
+        console.log(e.response.status);
+        console.log(e.response.data);
         res.status(e.response.status).send(e.response.data);
     }
 });
