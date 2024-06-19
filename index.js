@@ -15,6 +15,8 @@ app.use(cors({
     origin: `${FRONTEND_URL}`
 }))
 
+app.use(express.json())
+
 app.all('/content/*', async (req, res) => {
     let rocsContentServiceUrl = `${CONTENT_SERVICE_URL}${req.originalUrl}`;
     
