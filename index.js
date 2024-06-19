@@ -5,7 +5,6 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express')
 const cors = require('cors')
 const CONTENT_SERVICE_URL = process.env.CONTENT_SERVICE;
-const FRONTEND_URL = process.env.FRONTEND_URL;
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express();
@@ -14,11 +13,6 @@ const services = {
     content: CONTENT_SERVICE_URL
 }
 
-const corsOptions = {
-    origin: FRONTEND_URL
-}
-
-app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/content', cors(corsOptions), createProxyMiddleware({ target: services.content, changeOrigin: true }));
 
