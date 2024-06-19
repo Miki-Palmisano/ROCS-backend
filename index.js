@@ -1,6 +1,4 @@
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
-}
+
 
 const express = require('express')
 const cors = require('cors')
@@ -18,7 +16,7 @@ const corsOptions = {
 app.use(cors())
 
 app.all('/content/*', async (req, res) => {
-    let rocsContentServiceUrl = `${CONTENT_SERVICE_URL}/${req.originalUrl}`;
+    let rocsContentServiceUrl = `${CONTENT_SERVICE_URL}${req.originalUrl}`;
     
     try {
         const response = await axios({
