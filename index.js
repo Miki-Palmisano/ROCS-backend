@@ -11,16 +11,13 @@ const PORT = process.env.PORT || 3000;
 
 const app = express()
 
-const corsOptions = {
-    origin: `${FRONTEND_URL}`,
-    optionsSuccessStatus: 200
-}
-
-app.use(cors())
+app.use(cors({
+    origin: `${FRONTEND_URL}`
+}))
 
 app.all('/content/*', async (req, res) => {
-    //let rocsContentServiceUrl = `${CONTENT_SERVICE_URL}${req.originalUrl}`;
-    let rocsContentServiceUrl = `https://rocs-content-service.onrender.com/content/films`;
+    let rocsContentServiceUrl = `${CONTENT_SERVICE_URL}${req.originalUrl}`;
+    
     try {
         const response = await axios({
             method: req.method,
@@ -28,8 +25,7 @@ app.all('/content/*', async (req, res) => {
             data: req.body,
             headers: {
                 ...req.headers,
-            },
-            timeout: 10000
+            }
         });
         res.status(response.status).send(response.data);
     } catch (e) {
