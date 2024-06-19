@@ -11,10 +11,11 @@ const app = express();
 
 const services = {
     content: CONTENT_SERVICE_URL
-}
+} 
 
+app.use(cors());
 app.use(express.json());
-app.use('/content', cors(), createProxyMiddleware({ target: services.content, changeOrigin: true }));
+app.use('/content', createProxyMiddleware({ target: services.content, changeOrigin: true }));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
