@@ -11,14 +11,14 @@ const FRONTEND_URL = process.env.FRONTEND_URL;
 const app = express()
 
 const corsOptions = {
-    origin: '',
+    origin: `${FRONTEND_URL}`,
     optionsSuccessStatus: 200
 }
 
 app.use(cors())
 
 app.all('/content/*', async (req, res) => {
-    let rocsContentServiceUrl = `${CONTENT_SERVICE_URL}${req.originalUrl}`;
+    let rocsContentServiceUrl = `${CONTENT_SERVICE_URL}/${req.originalUrl}`;
     
     try {
         const response = await axios({
