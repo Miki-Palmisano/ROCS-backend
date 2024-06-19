@@ -1,10 +1,13 @@
-
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 
 const express = require('express')
 const cors = require('cors')
 const axios = require('axios')
 const CONTENT_SERVICE_URL = process.env.CONTENT_SERVICE;
 const FRONTEND_URL = process.env.FRONTEND_URL;
+const PORT = process.env.PORT || 3000;
 
 const app = express()
 
@@ -34,6 +37,6 @@ app.all('/content/*', async (req, res) => {
 });
 
 
-app.listen(3000, () => {
-    console.log("Gateway listening on port 3000")
+app.listen(PORT, () => {
+    console.log(`Gateway listening on port ${PORT}`)
 })
