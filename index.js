@@ -15,8 +15,7 @@ const services = {
 }
 
 const corsOptions = {
-    origin: FRONTEND_URL,
-    optionsSuccessStatus: 200
+    origin: FRONTEND_URL
 }
 
 console.log('corsOptions', corsOptions)
