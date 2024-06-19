@@ -17,12 +17,12 @@ app.use(cors({
 
 app.use(express.json())
 
-app.all('/content/*', async (req, res) => {
+app.get('/content/*', async (req, res) => {
     let rocsContentServiceUrl = `${CONTENT_SERVICE_URL}${req.originalUrl}`;
     
     try {
         const response = await axios({
-            method: req.method,
+            method: 'GET',
             url: rocsContentServiceUrl,
             data: req.body,
             headers: {
