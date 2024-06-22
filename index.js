@@ -6,6 +6,7 @@ const express = require('express')
 const cors = require('cors')
 const CONTENT_SERVICE_URL = process.env.CONTENT_SERVICE;
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const collectionFilm = require('./routes/films')
 
 const app = express();
 
@@ -15,6 +16,9 @@ const services = {
 
 app.use(cors());
 app.use(express.json());
+
+app.use('/content/films', collectionFilm)
+
 app.use('/content', createProxyMiddleware({ target: services.content, changeOrigin: true }));
 
 const PORT = process.env.PORT || 3000;
