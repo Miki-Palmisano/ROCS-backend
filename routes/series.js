@@ -1,8 +1,8 @@
 const express = require('express');
-const { getFilmInfo } = require('../controllers/seriesController');
+const { getSerieInfo } = require('../controllers/seriesController');
 
 const router = express.Router();
 
-router.get('/info/:serieId', getFilmInfo);
+router.get('/info/:serieId', getSerieInfo);
 
 module.exports = router;
