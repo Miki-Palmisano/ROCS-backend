@@ -14,7 +14,7 @@ const getSerieInfo = async (req, res) => {
         console.error(error);
         res.status(500).send('Internal server error');
     }
-}
+} 
 
 module.exports = {
     getSerieInfo
