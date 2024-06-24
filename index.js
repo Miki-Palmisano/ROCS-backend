@@ -24,5 +24,5 @@ app.use('/content/series', collectionSerie)
 app.use('/content', createProxyMiddleware({ target: services.content, changeOrigin: true }));
 
 app.listen(3000, () => {
-    console.log(`Gateway listening on port ${PORT}`)
+    console.log(`Gateway listening on port 3000`)
 })
