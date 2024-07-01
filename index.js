@@ -8,6 +8,7 @@ const CONTENT_SERVICE_URL = process.env.CONTENT_SERVICE;
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const collectionFilm = require('./routes/films')
 const collectionSerie = require('./routes/series')
+const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN;
 
 const app = express();
 
@@ -15,7 +16,15 @@ const services = {
     content: CONTENT_SERVICE_URL
 }
 
-app.use(cors());
+const corsOptions = {
+    origin: ALLOWED_ORIGIN,
+    optionsSuccessStatus: 200,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: [ "Content-Type", "Authorization", "Origin"],
+}
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use('/content/films', collectionFilm)
