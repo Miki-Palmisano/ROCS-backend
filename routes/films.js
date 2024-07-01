@@ -1,5 +1,5 @@
 const express = require('express');
-const { getFilmInfo } = require('../controllers/filmsController');
+const { getFilmInfo, getFilmGenreWithSearch } = require('../controllers/filmsController');
 
 const router = express.Router();
 
