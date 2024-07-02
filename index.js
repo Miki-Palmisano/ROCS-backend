@@ -5,10 +5,10 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express')
 const cors = require('cors')
 const CONTENT_SERVICE_URL = process.env.CONTENT_SERVICE;
-const { createProxyMiddleware } = require('http-proxy-middleware');
+const axios = require('axios')
 const collectionFilm = require('./routes/films')
 const collectionSerie = require('./routes/series')
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN;
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS;
 
 const app = express();
 
@@ -17,11 +17,10 @@ const services = {
 }
 
 const corsOptions = {
-    origin: ALLOWED_ORIGIN,
+    origin: ALLOWED_ORIGINS,
     optionsSuccessStatus: 200,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: [ "Content-Type", "Authorization", "Origin"],
 }
 
 app.use(cors(corsOptions));
@@ -30,7 +29,22 @@ app.use(express.json());
 app.use('/content/films', collectionFilm)
 app.use('/content/series', collectionSerie)
 
-app.use('/content', createProxyMiddleware({ target: services.content, changeOrigin: true }));
+app.use('/content', (req, res) => {
+    const url = `${CONTENT_SERVICE_URL}${req.originalUrl.replace('/content', '')}`;
+
+    axios({
+        method: req.method,
+        url: url,
+        data: req.data
+    })
+    .then(response => {
+        res.json(response.data);
+    })
+    .catch(error => {
+        console.error('Errore nel inoltrare la richiesta:', error);
+        res.status(500).json({ error: 'Errore nel inoltrare la richiesta' });
+    });
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
