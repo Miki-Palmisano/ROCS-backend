@@ -15,7 +15,7 @@ const app = express();
 const services = {
     content: CONTENT_SERVICE_URL
 }
-
+ 
 const corsOptions = {
     origin: ALLOWED_ORIGINS,
     optionsSuccessStatus: 200,
