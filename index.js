@@ -7,11 +7,9 @@ const cors = require('cors')
 const axios = require('axios')
 const collectionFilm = require('./routes/films')
 const collectionSerie = require('./routes/series')
-const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS;
-const ExtractJwt = require('passport-jwt').ExtractJwt;
-const JwtStrategy = require('passport-jwt').Strategy;
-const jwt = require('jsonwebtoken');
+const collectionUser = require('./routes/users')
 const passport = require('passport');
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS;
 
 const app = express();
 
@@ -50,49 +48,8 @@ app.use('/content', (req, res) => {
     });
 });
 
-const opts = {
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-    secretOrKey: process.env.JWT_SECRET
-};
-
-passport.use(new JwtStrategy(opts, (jwt_payload, done) => {
-    done(null, jwt_payload); // In a real app, you might want to fetch the user from the database
-}));
-
 app.use(passport.initialize());
-
-const generateJWT = (user) => {
-    const payload = {
-        id: user.id,
-        username: user.username
-    };
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-};
-
-app.post('/database/user/register', async (req, res) => {
-    try {
-        const response = await axios.post(`${services.database}/user/register`, req.body);
-        res.json(response.data);
-    } catch (error) {
-        console.log(error);
-        res.json(error);
-    }
-});
-
-app.post('/database/user/login', async (req, res) => {
-    try {
-        const response = await axios.post(`${services.database}/user/login`, req.body);
-        const user = response.data;
-        const token = generateJWT(user);
-        res.json({ token: token , username: user.username});
-    } catch (error) {
-        res.json(error);
-    }
-});
-
-app.get('/protected', passport.authenticate('jwt', { session: false }), (req, res) => {
-    res.send('This is a protected route');
-});
+app.use('/database', collectionUser)
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
