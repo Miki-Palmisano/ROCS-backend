@@ -11,13 +11,12 @@ const generateJWT = (user) => {
         id: user.id,
         username: user.username
     };
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1m' });
 };
 
 const registerUser = async (req, res) => {
     try {
         const response = await axios.post(`${services.database}/user/register`, req.body);
-        console.log(req.body)
         res.status(200).json(response.data);
     } catch (error) {
         if(error.response && error.response.status === 409) res.status(409).json({ message: error.response.data.message});
