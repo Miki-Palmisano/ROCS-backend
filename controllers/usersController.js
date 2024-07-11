@@ -11,7 +11,7 @@ const generateJWT = (user) => {
         id: user.id,
         username: user.username
     };
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1m' });
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 };
 
 const registerUser = async (req, res) => {
