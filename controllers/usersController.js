@@ -11,7 +11,7 @@ const generateJWT = (user) => {
         id: user.id,
         username: user.username
     };
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
 };
 
 const registerUser = async (req, res) => {
@@ -57,8 +57,70 @@ const authUser = async (req, res) => {
     }
 }
 
+const favorite = async (req, res) => {
+    const userId = req.userId;
+    try {
+        const response = await axios.post(`${services.database}/list/favorite`, { userId, ...req.body });
+        res.status(200).json(response.data);
+    } catch (error) {
+        if (error.response && error.response.status === 401) {
+            res.status(401).json({ message: error.response.data.message });
+        } else {
+            res.status(500).json({ message: 'Errore del server', error: error.message });
+        }
+    }
+}
+
+const getFavoriteStatus = async (req, res) => {
+    const userId = req.userId;
+    const { itemId, type } = req.query;
+    try {
+        const response = await axios.get(`${services.database}/list/favorite/status?userId=${userId}&itemId=${itemId}&type=${type}`);
+        res.status(response.status).json(response.data);
+    } catch (error) {
+        if (error.response && error.response.status === 404) {
+            res.status(404).json({ message: error.response.data.message });
+        } else {
+            res.status(500).json({ message: 'Errore del server', error: error.message });
+        }
+    }
+}
+
+const changeList = async (req, res) => {
+    const userId = req.userId;
+    try {
+        const response = await axios.post(`${services.database}/list/add`, { userId, ...req.body });
+        res.status(response.status).json(response.data);
+    } catch (error) {
+        if (error.response && error.response.status === 401) {
+            res.status(401).json({ message: error.response.data.message });
+        } else {
+            res.status(500).json({ message: 'Errore del server', error: error.message });
+        }
+    }
+}
+
+const getListState = async (req, res) => {
+    const userId = req.userId;
+    const { itemId, type } = req.query;
+    try {
+        const response = await axios.get(`${services.database}/list/state?userId=${userId}&itemId=${itemId}&type=${type}`);
+        res.status(response.status).json(response.data);
+    } catch (error) {
+        if (error.response && error.response.status === 401) {
+            res.status(401).json({ message: error.response.data.message });
+        } else {
+            res.status(500).json({ message: 'Errore del server', error: error.message });
+        }
+    }
+}
+
 module.exports = {
     registerUser,
     loginUser,
-    authUser
+    authUser,
+    favorite,
+    getFavoriteStatus,
+    changeList,
+    getListState
 }
