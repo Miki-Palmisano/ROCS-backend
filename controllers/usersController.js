@@ -115,6 +115,35 @@ const getListState = async (req, res) => {
     }
 }
 
+const getList = async (req, res) => {
+    const userId = req.userId;
+    const { listId } = req.query;
+    try {
+        const response = await axios.get(`${services.database}/list?userId=${userId}&listId=${listId}`);
+        res.status(response.status).json(response.data);
+    } catch (error) {
+        if (error.response && error.response.status === 401) {
+            res.status(401).json({ message: error.response.data.message });
+        } else {
+            res.status(500).json({ message: 'Errore del server', error: error.message });
+        }
+    }
+}
+
+const removeFromList = async (req, res) => {
+    const userId = req.userId;
+    try {
+        const response = await axios.post(`${services.database}/list/remove`, { userId, ...req.body });
+        res.status(response.status).json(response.data);
+    } catch (error) {
+        if (error.response && error.response.status === 401) {
+            res.status(401).json({ message: error.response.data.message });
+        } else {
+            res.status(500).json({ message: 'Errore del server', error: error.message });
+        }
+    }
+}
+
 module.exports = {
     registerUser,
     loginUser,
@@ -122,5 +151,7 @@ module.exports = {
     favorite,
     getFavoriteStatus,
     changeList,
-    getListState
+    getListState,
+    getList,
+    removeFromList
 }
