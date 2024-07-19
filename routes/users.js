@@ -30,7 +30,7 @@ router.post('/user/register',  user.registerUser);
 router.post('/user/login', user.loginUser);
 router.post('/user/auth', jwtCheck, user.authUser);
 router.post('/user/favorite', jwtVerify, user.favorite);
-router.get('/user/favorite', jwtVerify, user.getFavoriteStatus);
+router.get('/user/favorite/state', jwtVerify, user.getFavoriteState);
 router.post('/user/list', jwtVerify, user.changeList);
 router.get('/user/list/state', jwtVerify, user.getListState);
 router.get('/user/list', jwtVerify, user.getList);

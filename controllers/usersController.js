@@ -71,11 +71,11 @@ const favorite = async (req, res) => {
     }
 }
 
-const getFavoriteStatus = async (req, res) => {
+const getFavoriteState= async (req, res) => {
     const userId = req.userId;
     const { itemId, type } = req.query;
     try {
-        const response = await axios.get(`${services.database}/list/favorite/status?userId=${userId}&itemId=${itemId}&type=${type}`);
+        const response = await axios.get(`${services.database}/list/favorite/state?userId=${userId}&itemId=${itemId}&type=${type}`);
         res.status(response.status).json(response.data);
     } catch (error) {
         if (error.response && error.response.status === 404) {
@@ -149,7 +149,7 @@ module.exports = {
     loginUser,
     authUser,
     favorite,
-    getFavoriteStatus,
+    getFavoriteState,
     changeList,
     getListState,
     getList,
