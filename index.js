@@ -28,7 +28,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-app.use('/state', async (req, res) => {
+const stateService = async (req, res) => {
     let content = {status: 500};
     let database = {status: 500};
     try {
@@ -43,8 +43,19 @@ app.use('/state', async (req, res) => {
         database = {status: 500};
     }
 
-    res.status(200).json([content.status === 200 ? {service: 'Lista Film e Serie', status: 200} : {service: 'Lista Film e Serie', status: 500}, database.status === 200 ? {service: 'Funzioni Profilo', status: 200} : {service: 'Funzioni Profilo', status: 500}]);
-});
+    res.status(200).json([
+    content.status === 200 ? 
+        {service: 'Lista Film e Serie', status: 200} 
+        : 
+        {service: 'Lista Film e Serie', status: 500}, 
+    database.status === 200 ? 
+        {service: 'Funzioni Profilo', status: 200} 
+        : 
+        {service: 'Funzioni Profilo', status: 500}
+    ]);
+}
+
+app.use('/state', stateService);
 
 app.use('/content/films', collectionFilm)
 app.use('/content/series', collectionSerie)
