@@ -53,7 +53,7 @@ const loginUser = async (req, res) => {
             return res.status(401).json({message: 'Email o Password errati' });
         }
         const token = generateJWT({ id: existingUser._id, username: existingUser.username });
-        res.cookie('token', token, { httpOnly: true, maxAge: 60 * 1000 }).json({ username: existingUser.username });
+        res.cookie('token', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }).json({ username: existingUser.username });
     } catch (error) {
         if (error.response && error.response.status === 401) {
             res.status(401).json({ message: error.response.data.message , error: error});
@@ -85,7 +85,7 @@ const authUser = async (req, res) => {
             console.log(email, 'Utente già esistente, login');
         }
         const token = generateJWT({ id: existingUser._id, username: existingUser.username });
-        res.cookie('token', token, { httpOnly: true, maxAge: 60 * 1000 }).json({ username: existingUser.username });
+        res.cookie('token', token, { httpOnly: true, maxAge: 24 * 60 * 60 * 1000 }).json({ username: existingUser.username });
         console.log('Cookie impostati');
         //res.status(200).json({ token: token, username: existingUser.username});
     } catch (error) {
