@@ -1,8 +1,13 @@
 const express = require('express');
-const { getSerieInfo } = require('../controllers/seriesController');
+const seriesController = require('../controllers/seriesController');
 
 const router = express.Router();
 
-router.get('/info/:serieId', getSerieInfo);
+router.get('/info/:seriesId', seriesController.getSerieInfo);
 
-module.exports = router;
+router.get('/search', seriesController.searchSerie)
+router.get('/genres', seriesController.getSeriesGenre)
+router.get('/providers', seriesController.getProviders)
+router.get('/', seriesController.getSeries)
+
+module.exports = router; 
