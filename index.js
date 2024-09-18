@@ -15,6 +15,7 @@ const PORT = process.env.PORT || 3000;
 const collectionFilm = require('./routes/films')
 const collectionSerie = require('./routes/series')
 const collectionUser = require('./routes/users')
+const collectionAll = require('./routes/all')
 
 const app = express();
  
@@ -36,6 +37,7 @@ app.use('/status', (req, res) => {
 app.use('/films', collectionFilm)
 app.use('/series', collectionSerie)
 app.use('/users', collectionUser)
+app.use('/all', collectionAll)
 
 mongoose.connect(MONGODB_URI).then(() => {
     console.log('Connected to MongoDB');

@@ -107,7 +107,7 @@ const favorite = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const filmIndex = findUser.favoriteList.some(item => item.id === itemId && item.type === type);
+        const filmIndex = findUser.favoriteList.find(item => item.id === itemId.toString());
 
         if (filmIndex) {
             await user.User.findByIdAndUpdate(
@@ -126,12 +126,10 @@ const favorite = async (req, res) => {
         }
     } catch (error) {
         if (error.response && error.response.status === 401) {
-            res.status(401).json({ message: error.response.data.message });
-        } else {
-            res.status(500).json({ message: 'Errore del server', error: error.message });
+            // Gestione dell'errore
         }
     }
-}
+};
 
 const getFavoriteState = async (req, res) => {
     const userId = req.userId;
