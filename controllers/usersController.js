@@ -89,6 +89,7 @@ const authUser = async (req, res) => {
             console.log(email, 'Utente già esistente, login');
         }
         const token = generateJWT({ id: existingUser._id, username: existingUser.username });
+        res.setHeader('Cache-Control', 'no-store');
         res.cookie('token', token, { 
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
