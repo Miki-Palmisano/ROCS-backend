@@ -55,7 +55,7 @@ const loginUser = async (req, res) => {
         const token = generateJWT({ id: existingUser._id, username: existingUser.username });
         res.cookie('token', token, { 
             httpOnly: true, 
-            secure: true, 
+            secure: process.env.NODE_ENV === 'production', 
             SameSite: 'None',
             maxAge: 24 * 60 * 60 * 1000 }).json({ username: existingUser.username });
     } catch (error) {
@@ -90,10 +90,11 @@ const authUser = async (req, res) => {
         }
         const token = generateJWT({ id: existingUser._id, username: existingUser.username });
         res.cookie('token', token, { 
-            httpOnly: true, 
-            secure: true, 
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
             SameSite: 'None',
-            maxAge: 24 * 60 * 60 * 1000 }).json({ username: existingUser.username });
+            maxAge: 24 * 60 * 60 * 1000 });
+        res.status(200).json({ username: existingUser.username });
         console.log('Cookie impostati');
         //res.status(200).json({ token: token, username: existingUser.username});
     } catch (error) {
