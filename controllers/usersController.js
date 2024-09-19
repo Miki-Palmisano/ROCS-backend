@@ -56,8 +56,7 @@ const loginUser = async (req, res) => {
         res.cookie('token', token, { 
             httpOnly: true, 
             secure: true, 
-            sameSite: 'None', 
-            domain: 'rocs.onrender.com',
+            SameSite: 'None',
             maxAge: 24 * 60 * 60 * 1000 }).json({ username: existingUser.username });
     } catch (error) {
         if (error.response && error.response.status === 401) {
@@ -93,8 +92,7 @@ const authUser = async (req, res) => {
         res.cookie('token', token, { 
             httpOnly: true, 
             secure: true, 
-            sameSite: 'None', 
-            domain: 'rocs.onrender.com',
+            SameSite: 'None',
             maxAge: 24 * 60 * 60 * 1000 }).json({ username: existingUser.username });
         console.log('Cookie impostati');
         //res.status(200).json({ token: token, username: existingUser.username});
