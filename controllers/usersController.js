@@ -57,6 +57,7 @@ const loginUser = async (req, res) => {
             httpOnly: true, 
             secure: process.env.NODE_ENV === 'production', 
             sameSite: 'None',
+            domain: '.onrender.com',
             maxAge: 24 * 60 * 60 * 1000 }).json({ username: existingUser.username });
     } catch (error) {
         if (error.response && error.response.status === 401) {
@@ -94,6 +95,7 @@ const authUser = async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'None',
+            domain: '.onrender.com',
             maxAge: 24 * 60 * 60 * 1000 });
         res.status(200).json({ username: existingUser.username });
         console.log('Cookie impostati');
