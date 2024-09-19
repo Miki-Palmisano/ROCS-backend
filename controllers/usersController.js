@@ -56,7 +56,7 @@ const loginUser = async (req, res) => {
         res.cookie('token', token, { 
             httpOnly: true, 
             secure: true, 
-            sameSite:'None', 
+            sameSite: 'Lax', 
             domain: '.render.com',
             maxAge: 24 * 60 * 60 * 1000 }).json({ username: existingUser.username });
     } catch (error) {
@@ -93,7 +93,7 @@ const authUser = async (req, res) => {
         res.cookie('token', token, { 
             httpOnly: true, 
             secure: true, 
-            sameSite: 'None', 
+            sameSite: 'Lax', 
             domain: '.render.com',
             maxAge: 24 * 60 * 60 * 1000 }).json({ username: existingUser.username });
         console.log('Cookie impostati');
