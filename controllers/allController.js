@@ -39,7 +39,6 @@ const getPopular = async (req, res) => {
     const url = `https://api.themoviedb.org/3/trending/all/week`;
     const params = {language: 'it-IT', watch_region: 'IT', page: page};
     const response = await makeRequest(url, params);
-    console.log(page);
     res.json({content: dataTemplate(response), totalPages: response.data.total_pages});
 }
 

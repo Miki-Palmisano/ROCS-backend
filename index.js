@@ -6,7 +6,7 @@ const express = require('express')
 const cors = require('cors')
 const axios = require('axios')
 const mongoose = require('mongoose');
-const cookieParser = require('cookie-parser');
+const { auth } = require('express-oauth2-jwt-bearer');
 
 const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS;
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -21,12 +21,17 @@ const app = express();
  
 const corsOptions = {
     origin: ALLOWED_ORIGINS,
-    credentials: true,
+    credentials: true
 }
 
 app.use(cors(corsOptions));
 app.use(express.json());
-app.use(cookieParser());
+
+const jwtCheck = auth({
+    audience: 'rocs-certificate',
+    issuerBaseURL: 'https://dev-z0fliml3r4ydfsg6.eu.auth0.com/',
+    tokenSigningAlg: 'RS256'
+});
 
 app.use('/status', (req, res) => {
     res.status(200).json({ status: 'online' });
@@ -34,7 +39,7 @@ app.use('/status', (req, res) => {
 
 app.use('/films', collectionFilm)
 app.use('/series', collectionSerie)
-app.use('/users', collectionUser)
+app.use('/users', jwtCheck, collectionUser)
 app.use('/all', collectionAll)
 
 mongoose.connect(MONGODB_URI).then(() => {

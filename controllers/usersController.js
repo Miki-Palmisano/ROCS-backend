@@ -1,77 +1,4 @@
-const axios = require('axios');
-const jwt = require('jsonwebtoken');
 const user = require('../models/userModel');
-const bcrypt = require('bcrypt');
-
-const generateJWT = (user) => {
-    const payload = {
-        id: user.id,
-        username: user.username
-    };
-    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
-};
-
-const registerUser = async (req, res) => {
-    const { username, email, password } = req.body;
-    try {
-        const existingEmail = await user.User.findOne({ email });
-        if (existingEmail) {
-            return res.status(409).json({ message: 'Email già esistente' });
-        }
-        
-        const existingUsername = await user.User.findOne({ username });
-        if (existingUsername) {
-            return res.status(409).json({ message: 'Username già in uso' });
-        }
-
-        const passwordHash = await bcrypt.hash(password, 10);
-
-        const newUser = new user.User({
-            username,
-            email,
-            passwordHash: passwordHash
-        });
-
-        const savedUser = await newUser.save();
-        res.status(201).json({ message: 'Account Created' });
-    } catch (error) {
-        if(error.response && error.response.status === 409) res.status(409).json({ message: error.response.data.message});
-        else res.status(500).json({ message: 'Errore del server', error: error.message });
-        console.log(error)
-    }
-}
-
-const loginUser = async (req, res) => {
-    const { email, password } = req.body;
-    try {
-        const existingUser = await user.User.findOne({ email });
-        if (!existingUser) {
-            return res.status(401).json({message: 'Email o Password errati' });
-        }
-        const passwordMatch = await bcrypt.compare(password, existingUser.passwordHash);
-        if (!passwordMatch) {
-            return res.status(401).json({message: 'Email o Password errati' });
-        }
-        const token = generateJWT({ id: existingUser._id, username: existingUser.username });
-        res.cookie('token', token, { 
-            httpOnly: true, 
-            secure: process.env.NODE_ENV === 'production', 
-            same_site: 'None',
-            maxAge: 24 * 60 * 60 * 1000 }).json({ username: existingUser.username });
-    } catch (error) {
-        if (error.response && error.response.status === 401) {
-            res.status(401).json({ message: error.response.data.message , error: error});
-        } else {
-            res.status(500).json({ message: 'Errore del server', error: error.message });
-        }
-    }
-}
-
-const logoutUser = async (req, res) => {
-    res.clearCookie('token');
-    res.clearCookie('username');
-    res.status(200).json({ message: 'Logout effettuato' });
-}
 
 const authUser = async (req, res) => {
     const { email, username } = req.body;
@@ -88,16 +15,7 @@ const authUser = async (req, res) => {
         } else {
             console.log(email, 'Utente già esistente, login');
         }
-        const token = generateJWT({ id: existingUser._id, username: existingUser.username });
-        res.setHeader('Cache-Control', 'no-store');
-        res.cookie('token', token, { 
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            same_site: 'None',
-            maxAge: 24 * 60 * 60 * 1000 });
-        res.status(200).json({ username: existingUser.username });
-        console.log('Cookie impostati');
-        //res.status(200).json({ token: token, username: existingUser.username});
+        res.status(200).json({ username: existingUser.username, id: existingUser._id });
     } catch (error) {
         if (error.response && error.response.status === 401) {
             res.status(401).json({ message: error.response.data.message });
@@ -108,10 +26,10 @@ const authUser = async (req, res) => {
 }
 
 const favorite = async (req, res) => {
-    const userId = req.userId;
+    const id = req.headers["id"];
     const { itemId, type, image } = req.body;
     try {
-        const findUser = await user.User.findOne({ _id: userId });
+        const findUser = await user.User.findOne({ _id: id });
 
         if (!findUser) {
             return res.status(404).json({ message: 'User not found' });
@@ -121,14 +39,14 @@ const favorite = async (req, res) => {
 
         if (filmIndex) {
             await user.User.findByIdAndUpdate(
-                userId,
+                id,
                 { $pull: { favoriteList: { id: itemId } } }
             ); 
             console.log("Elemento rimosso dalla lista dei preferiti");
             res.status(200).json({ message: 'Elemento rimosso dalla lista dei preferiti'});
         } else {
             await user.User.findByIdAndUpdate(
-                userId,
+                id,
                 { $addToSet: { favoriteList: { id: itemId, type: type, img: image } } }
             );
             console.log("Elemento aggiunto alla lista dei preferiti");
@@ -142,10 +60,10 @@ const favorite = async (req, res) => {
 };
 
 const getFavoriteState = async (req, res) => {
-    const userId = req.userId;
+    const id = req.headers["id"];
     const { itemId, type } = req.query;
     try {
-        const findUser = await user.User.findOne({ _id: userId });
+        const findUser = await user.User.findOne({ _id: id });
 
         if (!findUser) {
             return res.status(404).json({ message: 'User not found' });
@@ -167,10 +85,10 @@ const getFavoriteState = async (req, res) => {
 }
 
 const changeList = async (req, res) => {
-    const userId = req.userId;
-    const { itemId, type, image, status, vote } = req.body;
+    const id = req.headers["id"];
+    const { itemId, type, image, status, vote} = req.body;
     try {
-        const findUser = await user.User.findOne({ _id: userId });
+        const findUser = await user.User.findOne({ _id: id });
 
         if (!findUser) {
             return res.status(404).json({ message: 'User not found' });
@@ -181,14 +99,14 @@ const changeList = async (req, res) => {
 
             if (findItem) {
                 await user.User.findOneAndUpdate(
-                    { _id: userId, 'filmList.filmId': itemId },
+                    { _id: id, 'filmList.filmId': itemId },
                     { $set: { 'filmList.$.status': status, 'filmList.$.vote': vote } }
                 )
                 console.log('Film aggiornato con successo')
                 res.status(200).json({ message: 'Film aggiornato con successo' });
             } else {
                 await user.User.findByIdAndUpdate(
-                    userId,
+                    id,
                     { $addToSet: { filmList: { id: itemId, img: image, status: status, vote: vote, type: 'films' } } }
                 )
                 console.log('Film aggiunto con successo')
@@ -199,14 +117,14 @@ const changeList = async (req, res) => {
 
             if (findItem) {
                 await user.User.findOneAndUpdate(
-                    { _id: userId, 'serieList.serieId': itemId },
+                    { _id: id, 'serieList.serieId': itemId },
                     { $set: { 'serieList.$.status': status, 'serieList.$.vote': vote } }
                 )
                 console.log('Serie aggiornata con successo')
                 res.status(200).json({ message: 'Serie aggiornata con successo' });
             } else {
                 await user.User.findByIdAndUpdate(
-                    userId,
+                    id,
                     { $addToSet: { serieList: { id: itemId, img: image, status: status, vote: vote, type: 'series' } } }
                 )
                 console.log('Serie aggiunta con successo')
@@ -220,10 +138,10 @@ const changeList = async (req, res) => {
 }
 
 const getListState = async (req, res) => {
-    const userId = req.userId;
+    const id = req.headers["id"];
     const { itemId, type } = req.query;
     try {
-        const findUser = await user.User.findOne({ _id: userId });
+        const findUser = await user.User.findOne({ _id: id });
 
         if (!findUser) {
             return res.status(404).json({ message: 'User not found' });
@@ -257,10 +175,10 @@ const getListState = async (req, res) => {
 }
 
 const getList = async (req, res) => {
-    const userId = req.userId;
+    const id = req.headers["id"];
     const { listId } = req.query;
     try {
-        const findUser = await user.User.findOne({ _id: userId });
+        const findUser = await user.User.findOne({ _id: id });
 
         if (!findUser) {
             return res.status(404).json({ message: 'User not found' });
@@ -273,10 +191,10 @@ const getList = async (req, res) => {
 }
 
 const removeFromList = async (req, res) => {
-    const userId = req.userId;
+    const id = req.headers["id"];
     const { itemId, type } = req.body;
     try {
-        const findUser = await user.User.findOne({ _id: userId });
+        const findUser = await user.User.findOne({ _id: id });
 
         if (!findUser) {
             return res.status(404).json({ message: 'User not found' });
@@ -284,14 +202,14 @@ const removeFromList = async (req, res) => {
 
         if(type === 'films') {
             await user.User.findByIdAndUpdate(
-                userId,
+                id,
                 { $pull: { filmList: { id: itemId } } }
             );
             console.log('Film rimosso con successo');
             res.status(200).json({ message: 'Film rimosso con successo' });
         } else if (type === 'series') {
             await user.User.findByIdAndUpdate(
-                userId,
+                id,
                 { $pull: { serieList: { id: itemId } } }
             );
             console.log('Serie rimossa con successo');
@@ -304,9 +222,6 @@ const removeFromList = async (req, res) => {
 }
 
 module.exports = {
-    registerUser,
-    loginUser,
-    logoutUser,
     authUser,
     favorite,
     getFavoriteState,
