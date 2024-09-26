@@ -27,7 +27,7 @@ const authUser = async (req, res) => {
 
 const favorite = async (req, res) => {
     const id = req.headers["id"];
-    const { itemId, type, image } = req.body;
+    const { itemId, type, image, title, year, description } = req.body;
     try {
         const findUser = await user.User.findOne({ _id: id });
 
@@ -47,7 +47,7 @@ const favorite = async (req, res) => {
         } else {
             await user.User.findByIdAndUpdate(
                 id,
-                { $addToSet: { favoriteList: { id: itemId, type: type, img: image } } }
+                { $addToSet: { favoriteList: { id: itemId, type: type, img: image, title: title, year: year, description: description } } }
             );
             console.log("Elemento aggiunto alla lista dei preferiti");
             res.status(200).json({ message: 'Elemento aggiunto alla lista dei preferiti'});
@@ -86,7 +86,7 @@ const getFavoriteState = async (req, res) => {
 
 const changeList = async (req, res) => {
     const id = req.headers["id"];
-    const { itemId, type, image, status, vote} = req.body;
+    const { itemId, type, image, status, vote, title, year, description} = req.body;
     try {
         const findUser = await user.User.findOne({ _id: id });
 
@@ -107,7 +107,7 @@ const changeList = async (req, res) => {
             } else {
                 await user.User.findByIdAndUpdate(
                     id,
-                    { $addToSet: { filmList: { id: itemId, img: image, status: status, vote: vote, type: 'films' } } }
+                    { $addToSet: { filmList: { id: itemId, img: image, status: status, vote: vote, type: 'films', title: title, description: description, year: year }}}
                 )
                 console.log('Film aggiunto con successo')
                 res.status(200).json({ message: 'Film aggiunto con successo' });
@@ -125,7 +125,7 @@ const changeList = async (req, res) => {
             } else {
                 await user.User.findByIdAndUpdate(
                     id,
-                    { $addToSet: { serieList: { id: itemId, img: image, status: status, vote: vote, type: 'series' } } }
+                    { $addToSet: { serieList: { id: itemId, img: image, status: status, vote: vote, type: 'series', title: title, description: description, year: year } } }
                 )
                 console.log('Serie aggiunta con successo')
                 res.status(200).json({ message: 'Serie aggiunta con successo' });
@@ -176,14 +176,14 @@ const getListState = async (req, res) => {
 
 const getList = async (req, res) => {
     const id = req.headers["id"];
-    const { listId } = req.query;
+    const { listType, listState } = req.query;
     try {
         const findUser = await user.User.findOne({ _id: id });
 
         if (!findUser) {
             return res.status(404).json({ message: 'User not found' });
         }
-        res.status(200).json(findUser[listId]);
+        res.status(200).json(findUser[listType === 'films' ? 'filmList' : 'serieList'].filter(item => item.status === listState).sort((a, b) => b.vote - a.vote));
     } catch (error) {
         console.error('Errore durante il recupero della lista utente:', error);
         res.status(500).json({ error: 'Errore durante il recupero della lista utente' });

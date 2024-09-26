@@ -19,6 +19,15 @@ const userSchema = new mongoose.Schema({
     },
     filmList: [
         {
+            title: {
+                type: String
+            },
+            year: {
+                type: String
+            },
+            description: {
+                type: String
+            },
             type: {
                 type: String
             },
@@ -41,6 +50,15 @@ const userSchema = new mongoose.Schema({
     ],
     serieList: [
         {
+            title: {
+                type: String
+            },
+            year: {
+                type: String
+            },
+            description: {
+                type: String
+            },
             type: {
                 type: String,
             },
@@ -63,6 +81,15 @@ const userSchema = new mongoose.Schema({
     ],
     favoriteList: [
         {
+            title: {
+                type: String
+            },
+            year: {
+                type: String
+            },
+            description: {
+                type: String
+            },
             id: {
                 type: String
             },
