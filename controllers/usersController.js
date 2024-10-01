@@ -1,16 +1,18 @@
 const user = require('../models/userModel');
 
 const authUser = async (req, res) => {
-    const { email, username } = req.body;
+    const { email, username, sub } = req.body;
 
     try {
-        const existingUser = await user.User.findOne({ email });
-        if (!existingUser) {
-            const newUser = new user.User({
-                username,
-                email
-            });
-            const savedUser = await newUser.save();
+        let existingUser = await user.User.findOne({ sub: sub });
+
+        if (existingUser === null) {
+            await user.User.create({
+                    sub: sub,
+                    username: username,
+                    email: email
+            })
+            existingUser = await user.User.findOne({ sub: sub });
             console.log('Utente creato');
         } else {
             console.log(email, 'Utente già esistente, login');
@@ -25,7 +27,7 @@ const authUser = async (req, res) => {
     }
 }
 
-const favorite = async (req, res) => {
+const favourite = async (req, res) => {
     const id = req.headers["id"];
     const { itemId, type, image, title, year, description } = req.body;
     try {
@@ -35,19 +37,31 @@ const favorite = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const filmIndex = findUser.favoriteList.find(item => item.id === itemId.toString());
+        const contentIndex = findUser.contentList.find(item => item.id === itemId.toString());
 
-        if (filmIndex) {
-            await user.User.findByIdAndUpdate(
-                id,
-                { $pull: { favoriteList: { id: itemId } } }
-            ); 
+        if (contentIndex) {
+            await user.User.findOneAndUpdate(
+                { _id: id, 'contentList.id': itemId },
+                { $set: { 'contentList.$.favourite': !contentIndex.favourite } }
+            )
             console.log("Elemento rimosso dalla lista dei preferiti");
             res.status(200).json({ message: 'Elemento rimosso dalla lista dei preferiti'});
         } else {
-            await user.User.findByIdAndUpdate(
-                id,
-                { $addToSet: { favoriteList: { id: itemId, type: type, img: image, title: title, year: year, description: description } } }
+            await user.User.updateOne(
+                { _id: id },
+                { $push:
+                        { contentList:
+                            {
+                                id: itemId,
+                                type: type,
+                                img: image,
+                                title: title,
+                                year: year,
+                                description: description,
+                                favourite: true
+                            }
+                        }
+                }
             );
             console.log("Elemento aggiunto alla lista dei preferiti");
             res.status(200).json({ message: 'Elemento aggiunto alla lista dei preferiti'});
@@ -69,7 +83,7 @@ const getFavoriteState = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const favoriteItem = findUser.favoriteList.find(item => item.id === itemId && item.type === type);
+        const favoriteItem = findUser.contentList.find(item => item.id === itemId && item.favourite === true);
 
         if (favoriteItem) {
             console.log('Elemento preferito trovato');
@@ -94,42 +108,45 @@ const changeList = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        if(type === 'films') {
-            const findItem = findUser.filmList.some(item => item.filmId === itemId);
+        const existingContent = findUser.contentList.find(item => item.id === itemId);
 
-            if (findItem) {
-                await user.User.findOneAndUpdate(
-                    { _id: id, 'filmList.filmId': itemId },
-                    { $set: { 'filmList.$.status': status, 'filmList.$.vote': vote } }
-                )
-                console.log('Film aggiornato con successo')
-                res.status(200).json({ message: 'Film aggiornato con successo' });
-            } else {
-                await user.User.findByIdAndUpdate(
-                    id,
-                    { $addToSet: { filmList: { id: itemId, img: image, status: status, vote: vote, type: 'films', title: title, description: description, year: year }}}
-                )
-                console.log('Film aggiunto con successo')
-                res.status(200).json({ message: 'Film aggiunto con successo' });
-            }
-        } else if (type === 'series') {
-            const findItem = findUser.serieList.some(item => item.serieId === itemId);
-
-            if (findItem) {
-                await user.User.findOneAndUpdate(
-                    { _id: id, 'serieList.serieId': itemId },
-                    { $set: { 'serieList.$.status': status, 'serieList.$.vote': vote } }
-                )
-                console.log('Serie aggiornata con successo')
-                res.status(200).json({ message: 'Serie aggiornata con successo' });
-            } else {
-                await user.User.findByIdAndUpdate(
-                    id,
-                    { $addToSet: { serieList: { id: itemId, img: image, status: status, vote: vote, type: 'series', title: title, description: description, year: year } } }
-                )
-                console.log('Serie aggiunta con successo')
-                res.status(200).json({ message: 'Serie aggiunta con successo' });
-            }
+        if (existingContent) {
+            console.log('Contenuto trovato');
+            await user.User.updateOne(
+                { _id: id, 'contentList.id': itemId },
+                {
+                    $set: {
+                        'contentList.$.img': image,
+                        'contentList.$.status': status,
+                        'contentList.$.vote': vote,
+                        'contentList.$.title': title,
+                        'contentList.$.description': description,
+                        'contentList.$.year': year,
+                        'contentList.$.type': type
+                    }
+                }
+            );
+            res.status(200).json({ message: 'Contenuto aggiornato con successo' });
+        } else {
+            await user.User.updateOne(
+                { _id: id },
+                {
+                    $push: {
+                        contentList: {
+                            id: itemId,
+                            img: image,
+                            status: status,
+                            vote: vote,
+                            type: type,
+                            title: title,
+                            description: description,
+                            year: year,
+                            favourite: false
+                        }
+                    }
+                }
+            );
+            res.status(200).json({ message: 'Contenuto aggiunto con successo' });
         }
     } catch (error) {
         console.error('Errore durante il recupero dello stato del contenuto:', error);
@@ -139,7 +156,7 @@ const changeList = async (req, res) => {
 
 const getListState = async (req, res) => {
     const id = req.headers["id"];
-    const { itemId, type } = req.query;
+    const { itemId } = req.query;
     try {
         const findUser = await user.User.findOne({ _id: id });
 
@@ -147,27 +164,10 @@ const getListState = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        if(type === 'films') {
-            const filmItem = findUser.filmList.find(item => item.id === itemId);
+        const contentItem = findUser.contentList.find(item => item.id === itemId);
 
-            if (filmItem) {
-                console.log('Film trovato');
-                res.status(200).json(filmItem);
-            } else {
-                console.log('Film non trovato');
-                res.status(404).json({ message: 'Film non trovato' });
-            }
-        } else if (type === 'series') {
-            const serieItem = findUser.serieList.find(item => item.id === itemId);
-
-            if (serieItem) {
-                console.log('Serie trovata');
-                res.status(200).json(serieItem);
-            } else {
-                console.log('Serie non trovata');
-                res.status(404).json({ message: 'Serie non trovata' });
-            }
-        }
+        if(contentItem) res.status(200).json(contentItem);
+        else res.status(404).json({ message: 'Contenuto non trovato' });
     } catch (error) {
         console.error('Errore durante il recupero dello stato del contenuto:', error);
         res.status(500).json({ error: 'Errore durante il recupero dello stato del contenuto' });
@@ -176,14 +176,20 @@ const getListState = async (req, res) => {
 
 const getList = async (req, res) => {
     const id = req.headers["id"];
-    const { listType, listState } = req.query;
+    const { listType, listState, listFavourite } = req.query;
     try {
         const findUser = await user.User.findOne({ _id: id });
 
         if (!findUser) {
             return res.status(404).json({ message: 'User not found' });
         }
-        res.status(200).json(findUser[listType === 'films' ? 'filmList' : 'serieList'].filter(item => item.status === listState).sort((a, b) => b.vote - a.vote));
+
+        let response = [];
+
+        if(listFavourite === 'true') response = findUser.contentList.filter(item => item.status === listState && item.type === listType && item.favourite === true).sort((a, b) => b.vote - a.vote);
+        else response = findUser.contentList.filter(item => item.status === listState && item.type === listType).sort((a, b) => b.vote - a.vote);
+
+        res.status(200).json(response);
     } catch (error) {
         console.error('Errore durante il recupero della lista utente:', error);
         res.status(500).json({ error: 'Errore durante il recupero della lista utente' });
@@ -197,36 +203,80 @@ const removeFromList = async (req, res) => {
         const findUser = await user.User.findOne({ _id: id });
 
         if (!findUser) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(404).json({ message: 'Utente non trovato' });
         }
 
-        if(type === 'films') {
-            await user.User.findByIdAndUpdate(
-                id,
-                { $pull: { filmList: { id: itemId } } }
-            );
-            console.log('Film rimosso con successo');
-            res.status(200).json({ message: 'Film rimosso con successo' });
-        } else if (type === 'series') {
-            await user.User.findByIdAndUpdate(
-                id,
-                { $pull: { serieList: { id: itemId } } }
-            );
-            console.log('Serie rimossa con successo');
-            res.status(200).json({ message: 'Serie rimossa con successo' });
-        }
+        await user.User.findByIdAndUpdate(
+            id,
+            { $pull: { contentList: { id: itemId } } }
+        );
+
+        console.log('Contenuto rimosso con successo');
+        res.status(200).json({ message: 'Film rimosso con successo' });
+
     } catch (error) {
         console.error('Errore durante la rimozione del contenuto:', error);
         res.status(500).json({ error: 'Errore durante la rimozione del contenuto' });
     }
 }
 
+const setProfileImage = async (req, res) => {
+    const id = req.headers["id"];
+    const { image, selection, radius } = req.body;
+
+    try{
+        const findUser = await user.User.findOne({ _id: id });
+
+        if (!findUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        await user.User.updateOne(
+            { _id: id },
+            {
+                $set: {
+                    'kingContent.img': image,
+                    'kingContent.crop.selection.x': selection.x,
+                    'kingContent.crop.selection.y': selection.y,
+                    'kingContent.crop.radius': radius
+                }
+            }
+        );
+
+        console.log('Immagine profilo aggiornata con successo');
+
+        res.status(200).json({ message: 'Immagine profilo aggiornata con successo' });
+
+    }catch (error) {
+        console.error('Errore durante il recupero dello stato del contenuto:', error);
+        res.status(500).json({ error: 'Errore durante il recupero dello stato del contenuto' });
+    }
+}
+
+const getProfileImage = async (req, res) => {
+    const id = req.headers["id"];
+    try {
+        const findUser = await user.User.findOne({ _id: id });
+
+        if (!findUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        console.log('Immagine profilo trovata');
+        res.status(200).json(findUser.kingContent);
+    } catch (error) {
+        console.error('Errore durante il recupero dello stato del contenuto:', error);
+        res.status(500).json({ error: 'Errore durante il recupero dello stato del contenuto' });
+    }
+}
+
 module.exports = {
     authUser,
-    favorite,
+    favourite,
     getFavoriteState,
     changeList,
     getListState,
     getList,
-    removeFromList
+    removeFromList,
+    setProfileImage,
+    getProfileImage
 }
