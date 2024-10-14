@@ -32,7 +32,8 @@ const userSchema = new mongoose.Schema({
                 }
             },
             radius: {
-                type: Number
+                type: Number,
+                default: 50
             }
         }
     },
